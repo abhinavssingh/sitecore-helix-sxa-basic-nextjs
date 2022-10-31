@@ -1,4 +1,4 @@
-# Welcome to the helix-sample-aspdotnetcore Repository
+# Welcome to the helix-sxa-basic-nextjs Repository
 
 The objective of this repository is to set up Sitecore helix project on any topology means xp0, xp1 and xm1 dynamically which will reduce your time to setup insatnce.
 
