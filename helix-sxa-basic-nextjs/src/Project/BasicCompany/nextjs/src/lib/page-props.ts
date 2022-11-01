@@ -1,22 +1,18 @@
+import { Redirect } from 'next';
 import {
   DictionaryPhrases,
-  LayoutServiceData,
   ComponentPropsCollection,
-  RouteData,
-  LayoutServiceContext,
+  LayoutServiceData,
 } from '@sitecore-jss/sitecore-jss-nextjs';
-import { NavigationQuery } from 'components/Navigation/Navigation.graphql';
 
+/**
+ * Sitecore page props
+ */
 export type SitecorePageProps = {
   locale: string;
-  layoutData: LayoutServiceData | null;
   dictionary: DictionaryPhrases;
   componentProps: ComponentPropsCollection;
-  navigation: NavigationQuery;
   notFound: boolean;
-};
-
-export type SitecoreContextValues = LayoutServiceContext & {
-  route: RouteData | undefined;
-  itemId: string | undefined;
+  layoutData: LayoutServiceData;
+  redirect?: Redirect;
 };
