@@ -5,6 +5,7 @@ import {
   Placeholder,
   useSitecoreContext,
   VisitorIdentification,
+  useSitecoreContext
 } from '@sitecore-jss/sitecore-jss-nextjs';
 import { useEffect } from 'react';
 import { SitecoreContextValues } from 'lib/page-props';
