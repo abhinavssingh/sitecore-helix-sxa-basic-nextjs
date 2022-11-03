@@ -11,6 +11,7 @@ import { SitecorePageProps } from 'lib/page-props';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'nprogress/nprogress.css';
 import 'assets/app.css';
+import 'assets/basic-company.css';
 
 NProgress.configure({ showSpinner: false, trickleSpeed: 100 });
 

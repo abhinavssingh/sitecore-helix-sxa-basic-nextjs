@@ -10,13 +10,19 @@ import {
   EditingComponentPlaceholder,
   StaticPath,
 } from '@sitecore-jss/sitecore-jss-nextjs';
-import { SitecorePageProps } from 'lib/page-props';
+import { SitecorePageProps, SitecoreContextValues } from 'lib/page-props';
 import { sitecorePagePropsFactory } from 'lib/page-props-factory';
 // different componentFactory method will be used based on whether page is being edited
 import { componentFactory, editingComponentFactory } from 'temp/componentFactory';
+import { NavigationDataContext } from 'components/Navigation/NavigationDataContext';
 import { sitemapFetcher } from 'lib/sitemap-fetcher';
 
-const SitecorePage = ({ notFound, componentProps, layoutData }: SitecorePageProps): JSX.Element => {
+const SitecorePage = ({
+  notFound,
+  layoutData,
+  componentProps,
+  navigation,
+}: SitecorePageProps): JSX.Element => {
   useEffect(() => {
     // Since Sitecore editors do not support Fast Refresh, need to refresh editor chromes after Fast Refresh finished
     handleEditorFastRefresh();
@@ -27,12 +33,13 @@ const SitecorePage = ({ notFound, componentProps, layoutData }: SitecorePageProp
     return <NotFound />;
   }
 
-  const isEditing = layoutData.sitecore.context.pageEditing;
-  const isComponentRendering =
+const isEditing = layoutData.sitecore.context.pageEditing;
+const isComponentRendering =
     layoutData.sitecore.context.renderingType === RenderingType.Component;
-
-  return (
-    <ComponentPropsContext value={componentProps}>
+  
+const PageLayout = () => (
+    <NavigationDataContext value={navigation}>
+      <ComponentPropsContext value={componentProps}>
       <SitecoreContext
         componentFactory={isEditing ? editingComponentFactory : componentFactory}
         layoutData={layoutData}
@@ -48,7 +55,10 @@ const SitecorePage = ({ notFound, componentProps, layoutData }: SitecorePageProp
         )}
       </SitecoreContext>
     </ComponentPropsContext>
+    </NavigationDataContext>
   );
+
+  return <PageLayout />;
 };
 
 // This function gets called at build and export time to determine
