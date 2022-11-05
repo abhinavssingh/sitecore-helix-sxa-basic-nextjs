@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-* NodeJs 16.x
+* NodeJs 14.x
 * .NET Core 3.1 SDK
 * .NET Framework 4.8 SDK
 * Visual Studio 2019
