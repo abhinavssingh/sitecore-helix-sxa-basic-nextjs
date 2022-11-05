@@ -4,7 +4,8 @@ documents: 'src/**/*.graphql'
 plugins:
   - typescript
   - typescript-operations
-  - typed-document-node
+  - typescript-react-apollo
 cacheDir: .generated
 config:
+    reactApolloVersion: 2
     useIndexSignature: true

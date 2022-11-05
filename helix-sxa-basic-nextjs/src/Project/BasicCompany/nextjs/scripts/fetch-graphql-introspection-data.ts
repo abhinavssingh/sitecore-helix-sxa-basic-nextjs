@@ -1,4 +1,4 @@
-import { GraphQLRequestClient } from '@sitecore-jss/sitecore-jss-nextjs';
+import fetch from 'cross-fetch';
 import fs from 'fs';
 import { getIntrospectionQuery } from 'graphql';
 import { generateConfig } from './generate-config';
@@ -21,14 +21,16 @@ try {
   process.exit(1);
 }
 
-console.log(`Fetch graphql introspection data from ${jssConfig.graphQLEndpoint}...`);
+console.log(`Fetch graphql introspection data from ${jssConfig.graphqlEndpoint}...`);
 
-const client = new GraphQLRequestClient(jssConfig.graphQLEndpoint, {
-  apiKey: jssConfig.sitecoreApiKey,
-});
-
-client
-  .request(getIntrospectionQuery())
+fetch(jssConfig.graphqlEndpoint, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    query: getIntrospectionQuery(),
+  }),
+})
+  .then((result) => result.json())
   .then((result) => {
     fs.writeFile(
       './src/temp/GraphQLIntrospectionResult.json',

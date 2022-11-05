@@ -1,11 +1,10 @@
-import React from 'react';
 import Head from 'next/head';
+import { getPublicUrl } from 'lib/util';
 import {
-  Placeholder,
-  getPublicUrl,
   LayoutServiceData,
+  Placeholder,
   useSitecoreContext,
-  VisitorIdentification
+  VisitorIdentification,
 } from '@sitecore-jss/sitecore-jss-nextjs';
 import { useEffect } from 'react';
 import { SitecoreContextValues } from 'lib/page-props';

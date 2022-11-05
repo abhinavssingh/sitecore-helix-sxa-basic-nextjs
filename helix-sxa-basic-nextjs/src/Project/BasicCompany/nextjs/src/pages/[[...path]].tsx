@@ -1,19 +1,15 @@
 import { useEffect } from 'react';
 import { GetStaticPaths, GetStaticProps } from 'next';
-import NotFound from 'src/NotFound';
-import Layout from 'src/Layout';
+import NotFound from 'components/NotFound';
+import Layout from 'components/Layout';
 import {
-  RenderingType,
   SitecoreContext,
   ComponentPropsContext,
-  handleEditorFastRefresh,
-  EditingComponentPlaceholder,
-  StaticPath,
+  handleExperienceEditorFastRefresh,
 } from '@sitecore-jss/sitecore-jss-nextjs';
 import { SitecorePageProps, SitecoreContextValues } from 'lib/page-props';
 import { sitecorePagePropsFactory } from 'lib/page-props-factory';
-// different componentFactory method will be used based on whether page is being edited
-import { componentFactory, editingComponentFactory } from 'temp/componentFactory';
+import { componentFactory } from 'temp/componentFactory';
 import { NavigationDataContext } from 'components/Navigation/NavigationDataContext';
 import { sitemapFetcher } from 'lib/sitemap-fetcher';
 
@@ -24,37 +20,31 @@ const SitecorePage = ({
   navigation,
 }: SitecorePageProps): JSX.Element => {
   useEffect(() => {
-    // Since Sitecore editors do not support Fast Refresh, need to refresh editor chromes after Fast Refresh finished
-    handleEditorFastRefresh();
+    // Since Experience Editor does not support Fast Refresh need to refresh EE chromes after Fast Refresh finished
+    handleExperienceEditorFastRefresh();
   }, []);
 
-  if (notFound || !layoutData.sitecore.route) {
+  if (notFound || !layoutData) {
     // Shouldn't hit this (as long as 'notFound' is being returned below), but just to be safe
     return <NotFound />;
   }
 
-const isEditing = layoutData.sitecore.context.pageEditing;
-const isComponentRendering =
-    layoutData.sitecore.context.renderingType === RenderingType.Component;
-  
-const PageLayout = () => (
+  const context: SitecoreContextValues = {
+    route: layoutData.sitecore.route,
+    itemId: layoutData.sitecore.route?.itemId,
+    ...layoutData.sitecore.context,
+  };
+
+  const PageLayout = () => (
     <NavigationDataContext value={navigation}>
       <ComponentPropsContext value={componentProps}>
-      <SitecoreContext
-        componentFactory={isEditing ? editingComponentFactory : componentFactory}
-        layoutData={layoutData}
-      >
-        {/*
-          Sitecore Pages supports component rendering to avoid refreshing the entire page during component editing.
-          If you are using Experience Editor only, this logic can be removed, Layout can be left.
-        */}
-        {isComponentRendering ? (
-          <EditingComponentPlaceholder rendering={layoutData.sitecore.route} />
-        ) : (
+        <SitecoreContext<SitecoreContextValues>
+          componentFactory={componentFactory}
+          context={context}
+        >
           <Layout layoutData={layoutData} />
-        )}
-      </SitecoreContext>
-    </ComponentPropsContext>
+        </SitecoreContext>
+      </ComponentPropsContext>
     </NavigationDataContext>
   );
 
@@ -70,26 +60,21 @@ export const getStaticPaths: GetStaticPaths = async (context) => {
   // will be generated on request (development mode in this example).
   // Alternatively, the entire sitemap could be pre-rendered
   // ahead of time (non-development mode in this example).
-  // See https://nextjs.org/docs/basic-features/data-fetching/incremental-static-regeneration
+  // See https://nextjs.org/docs/basic-features/data-fetching#incremental-static-regeneration
 
-  let paths: StaticPath[] = [];
-  let fallback: boolean | 'blocking' = 'blocking';
+  if (process.env.NODE_ENV !== 'development') {
+    // Note: Next.js runs export in production mode
+    const paths = await sitemapFetcher.fetch(context);
 
-  if (process.env.NODE_ENV !== 'development' && !process.env.DISABLE_SSG_FETCH) {
-    try {
-      // Note: Next.js runs export in production mode
-      paths = await sitemapFetcher.fetch(context);
-    } catch (error) {
-      console.log('Error occurred while fetching static paths');
-      console.log(error);
-    }
-
-    fallback = process.env.EXPORT_MODE ? false : fallback;
+    return {
+      paths,
+      fallback: process.env.EXPORT_MODE ? false : 'blocking',
+    };
   }
 
   return {
-    paths,
-    fallback,
+    paths: [],
+    fallback: 'blocking',
   };
 };
 
@@ -98,13 +83,6 @@ export const getStaticPaths: GetStaticPaths = async (context) => {
 // revalidation (or fallback) is enabled and a new request comes in.
 export const getStaticProps: GetStaticProps = async (context) => {
   const props = await sitecorePagePropsFactory.create(context);
-
-  // Check if we have a redirect (e.g. custom error page)
-  if (props.redirect) {
-    return {
-      redirect: props.redirect,
-    };
-  }
 
   return {
     props,
